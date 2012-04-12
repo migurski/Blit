@@ -48,10 +48,10 @@ class Layer:
         """
         return utils.rgba2img(self._rgba)
     
-    def blend(self, other, mask=None, opacity=1, mode=None):
+    def blend(self, other, mask=None, opacity=1, blendfunc=None):
         """ Return a new Layer, with data from another layer blended on top.
         
-            See blends.combine() for list of working blend modes.
+            See blends.combine() for details on blend functions.
         """
         #
         # Choose an output size based on the first input that has one.
@@ -79,7 +79,7 @@ class Layer:
             mask_lum = 0.299 * mask_r + 0.587 * mask_g + 0.114 * mask_b
             alpha_chan *= mask_lum
         
-        output_rgba = blends.combine(bottom_rgba, top_rgb, alpha_chan, opacity, mode)
+        output_rgba = blends.combine(bottom_rgba, top_rgb, alpha_chan, opacity, blendfunc)
         
         return Layer(output_rgba)
 

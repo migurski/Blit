@@ -6,7 +6,7 @@ Run as a module, like this:
 import unittest
 import Image
 
-from . import Bitmap, Color
+from . import Bitmap, Color, blends
 
 def _str2img(str):
     """
@@ -253,7 +253,7 @@ class BlendTests(unittest.TestCase):
     def test0(self):
         
         out = self.h_gradient
-        out = out.blend(self.v_gradient, mode='screen')
+        out = out.blend(self.v_gradient, blendfunc=blends.screen)
         
         img = out.image()
         
@@ -270,7 +270,7 @@ class BlendTests(unittest.TestCase):
     def test1(self):
         
         out = self.h_gradient
-        out = out.blend(self.v_gradient, mode='multiply')
+        out = out.blend(self.v_gradient, blendfunc=blends.multiply)
         
         img = out.image()
         
@@ -287,7 +287,7 @@ class BlendTests(unittest.TestCase):
     def test2(self):
         
         out = self.h_gradient
-        out = out.blend(self.v_gradient, mode='linear light')
+        out = out.blend(self.v_gradient, blendfunc=blends.linear_light)
         
         img = out.image()
         
@@ -304,7 +304,7 @@ class BlendTests(unittest.TestCase):
     def test3(self):
         
         out = self.h_gradient
-        out = out.blend(self.v_gradient, mode='hard light')
+        out = out.blend(self.v_gradient, blendfunc=blends.hard_light)
         
         img = out.image()
         
