@@ -23,14 +23,13 @@ def combine(bottom_rgba, top_rgb, mask_chan, opacity, blendmode):
                            'linear light': linear_light_channels,
                            'hard light': hard_light_channels}
 
-        if blendmode in blend_functions:
-            for c in (0, 1, 2):
-                blend_function = blend_functions[blendmode]
-                output_rgba[c] = blend_function(bottom_rgba[c], top_rgb[c])
-        
-        else:
-            raise KnownUnknown('Unrecognized blend mode: "%s"' % blendmode)
+        if blendmode not in blend_functions:
+            raise KeyError('Unrecognized blend mode: "%s"' % blendmode)
     
+        for c in (0, 1, 2):
+            blend_function = blend_functions[blendmode]
+            output_rgba[c] = blend_function(bottom_rgba[c], top_rgb[c])
+        
     # comined effective mask channel
     if opacity < 1:
         mask_chan = mask_chan * opacity
