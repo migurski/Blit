@@ -6,7 +6,7 @@ Run as a module, like this:
 import unittest
 import Image
 
-from . import Layer, Color
+from . import Bitmap, Color
 
 def _str2img(str):
     """
@@ -31,10 +31,10 @@ class Tests(unittest.TestCase):
         #
         _fff, _ccc, _999, _000, _nil = '\xFF\xFF\xFF\xFF', '\xCC\xCC\xCC\xFF', '\x99\x99\x99\xFF', '\x00\x00\x00\xFF', '\x00\x00\x00\x00'
         
-        self.base = Layer(_str2img(_ccc * 9))
-        self.halos = Layer(_str2img(_fff + _fff + _000 + _fff + _fff + (_000 * 4)))
-        self.outlines = Layer(_str2img(_nil + (_999 * 7) + _nil))
-        self.streets = Layer(_str2img(_nil + _nil + _fff + _nil + _fff + _nil + _fff + _nil + _nil))
+        self.base = Bitmap(_str2img(_ccc * 9))
+        self.halos = Bitmap(_str2img(_fff + _fff + _000 + _fff + _fff + (_000 * 4)))
+        self.outlines = Bitmap(_str2img(_nil + (_999 * 7) + _nil))
+        self.streets = Bitmap(_str2img(_nil + _nil + _fff + _nil + _fff + _nil + _fff + _nil + _nil))
     
     def test0(self):
     
@@ -136,19 +136,19 @@ class AlphaTests(unittest.TestCase):
         _0000, _0008, _000f = '\x00\x00\x00\x00', '\x00\x00\x00\x80', '\x00\x00\x00\xFF'
         
         # 50% gray all over
-        self.gray = Layer(_str2img(_808f * 9))
+        self.gray = Bitmap(_str2img(_808f * 9))
             
         # nothing anywhere
-        self.nothing = Layer(_str2img(_0000 * 9))
+        self.nothing = Bitmap(_str2img(_0000 * 9))
             
         # opaque horizontal gradient, black to white
-        self.h_gradient = Layer(_str2img((_000f + _808f + _ffff) * 3))
+        self.h_gradient = Bitmap(_str2img((_000f + _808f + _ffff) * 3))
             
         # transparent white at top to opaque white at bottom
-        self.white_wipe = Layer(_str2img(_fff0 * 3 + _fff8 * 3 + _ffff * 3))
+        self.white_wipe = Bitmap(_str2img(_fff0 * 3 + _fff8 * 3 + _ffff * 3))
             
         # transparent black at top to opaque black at bottom
-        self.black_wipe = Layer(_str2img(_0000 * 3 + _0008 * 3 + _000f * 3))
+        self.black_wipe = Bitmap(_str2img(_0000 * 3 + _0008 * 3 + _000f * 3))
     
     def test0(self):
     
@@ -245,10 +245,10 @@ class BlendTests(unittest.TestCase):
         _000f = '\x00\x00\x00\xFF'
         
         # opaque horizontal gradient, black to white
-        self.h_gradient = Layer(_str2img((_000f + _808f + _ffff) * 3))
+        self.h_gradient = Bitmap(_str2img((_000f + _808f + _ffff) * 3))
             
         # opaque vertical gradient, black to white
-        self.v_gradient = Layer(_str2img(_000f * 3 + _808f * 3 + _ffff * 3))
+        self.v_gradient = Bitmap(_str2img(_000f * 3 + _808f * 3 + _ffff * 3))
     
     def test0(self):
         

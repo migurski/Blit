@@ -5,17 +5,12 @@ from . import blends
 from . import utils
 
 class Layer:
+    """ Represents a raster layer that can be combined with other layers.
     """
-    """
-    def __init__(self, input):
+    def __init__(self, channels):
+        """ Channels is a four-element list of numpy arrays: red, green, blue, alpha.
         """
-        """
-        if input.__class__ is Image.Image:
-            self._rgba = utils.img2rgba(input)
-        elif type(input) is list and len(input) == 4:
-            self._rgba = input
-        else:
-            raise TypeError("Layer wants an Image or four channel arrays, not %s" % repr(input.__class__))
+        self._rgba = channels
 
     def size(self):
         return self._rgba[0].shape
@@ -80,6 +75,17 @@ class Layer:
         output_rgba = blends.combine(bottom_rgba, top_rgb, alpha_chan, opacity, mode)
         
         return Layer(output_rgba)
+
+class Bitmap (Layer):
+    """ Raster layer instantiated with a bitmap image.
+    """
+    def __init__(self, input):
+        """ Input is a PIL Image or file name.
+        """
+        if type(input) in (str, unicode):
+            input = Image.open(input)
+        
+        self._rgba = utils.img2rgba(input)
 
 class Color (Layer):
     """
