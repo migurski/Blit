@@ -36,10 +36,10 @@ class Layer:
         w = min(w, width)
         h = min(h, height)
         
-        r[:w,:h] = self._rgba[0]
-        g[:w,:h] = self._rgba[1]
-        b[:w,:h] = self._rgba[2]
-        a[:w,:h] = self._rgba[3]
+        r[:w,:h] = self._rgba[0][:w,:h]
+        g[:w,:h] = self._rgba[1][:w,:h]
+        b[:w,:h] = self._rgba[2][:w,:h]
+        a[:w,:h] = self._rgba[3][:w,:h]
         
         return r, g, b, a
     
@@ -90,7 +90,7 @@ class Bitmap (Layer):
         if type(input) in (str, unicode):
             input = Image.open(input)
         
-        self._rgba = utils.img2rgba(input)
+        self._rgba = utils.img2rgba(input.convert('RGBA'))
 
 class Color (Layer):
     """ Simple single-color layer of indeterminate size.
