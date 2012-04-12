@@ -13,10 +13,15 @@ class Layer:
         self._rgba = channels
 
     def size(self):
+        """ Return width and height of the raster layer in pixels.
+        """
         return self._rgba[0].shape
     
     def rgba(self, width, height):
-        """
+        """ Return a list of numpy arrays, one for each channel.
+        
+            Width and height are required, and the resulting channels
+            will be clipped or extended to match the requested size.
         """
         w, h = self.size()
         
@@ -39,7 +44,7 @@ class Layer:
         return r, g, b, a
     
     def image(self):
-        """
+        """ Generate a new PIL Image representation of the contained channels.
         """
         return utils.rgba2img(self._rgba)
     
@@ -88,16 +93,25 @@ class Bitmap (Layer):
         self._rgba = utils.img2rgba(input)
 
 class Color (Layer):
-    """
+    """ Simple single-color layer of indeterminate size.
     """
     def __init__(self, red, green, blue, alpha=0xFF):
+        """ Red, green, blue and alpha are 8-bit channel values. Alpha optional.
+        """
         self._components = red / 255., green / 255., blue / 255., alpha / 255.
     
     def size(self):
+        """ Return nothing so it's clear that a color has no intrinsic size.
+        """
         return None
     
-    def rgba(self, width, height):
+    def image(self):
+        """ Return a fresh 1x1 image with the correct color.
         """
+        return Image.new('RGBA', (1, 1), [int(c * 255) for c in self._components])
+    
+    def rgba(self, width, height):
+        """ Generate a new list of channel arrays for the given dimensions.
         """
         r = numpy.ones((width, height)) * self._components[0]
         g = numpy.ones((width, height)) * self._components[1]
