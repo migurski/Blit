@@ -45,7 +45,7 @@ class Layer:
         """
         return _rgba2img(self._rgba)
     
-    def add(self, other, mask=None, mode=None):
+    def add(self, other, mask=None, opacity=1, mode=None):
         """ Return a new Layer, 
         """
         #
@@ -74,7 +74,7 @@ class Layer:
             mask_lum = 0.299 * mask_r + 0.587 * mask_g + 0.114 * mask_b
             alpha_chan *= mask_lum
         
-        output_rgba = blend_images(bottom_rgba, top_rgb, alpha_chan, 1, mode)
+        output_rgba = blend_images(bottom_rgba, top_rgb, alpha_chan, opacity, mode)
         
         return Layer(output_rgba)
 
@@ -529,6 +529,23 @@ if __name__ == '__main__':
             assert img.getpixel((2, 1)) == (0xFF, 0xFF, 0xFF, 0xFF), 'center right pixel'
             assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
             assert img.getpixel((1, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom center pixel'
+            assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
+        
+        def test4(self):
+            
+            out = self.h_gradient
+            out = out.add(self.v_gradient, opacity=0.5)
+            
+            img = out.image()
+            
+            assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+            assert img.getpixel((1, 0)) == (0x40, 0x40, 0x40, 0xFF), 'top center pixel'
+            assert img.getpixel((2, 0)) == (0x80, 0x80, 0x80, 0xFF), 'top right pixel'
+            assert img.getpixel((0, 1)) == (0x40, 0x40, 0x40, 0xFF), 'center left pixel'
+            assert img.getpixel((1, 1)) == (0x80, 0x80, 0x80, 0xFF), 'middle pixel'
+            assert img.getpixel((2, 1)) == (0xC0, 0xC0, 0xC0, 0xFF), 'center right pixel'
+            assert img.getpixel((0, 2)) == (0x80, 0x80, 0x80, 0xFF), 'bottom left pixel'
+            assert img.getpixel((1, 2)) == (0xC0, 0xC0, 0xC0, 0xFF), 'bottom center pixel'
             assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
     
     unittest.main()
