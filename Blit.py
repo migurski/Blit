@@ -115,12 +115,10 @@ def blend_images(bottom_rgba, top_rgb, mask_chan, opacity, blendmode):
         output_rgba[:3] = [numpy.copy(chan) for chan in top_rgb]
 
     else:
-        #blend_functions = {'screen': blend_channels_screen,
-        #                   'multiply': blend_channels_multiply,
-        #                   'linear light': blend_channels_linear_light,
-        #                   'hard light': blend_channels_hard_light}
         blend_functions = {'screen': blend_channels_screen,
-                           'multiply': blend_channels_multiply}
+                           'multiply': blend_channels_multiply,
+                           'linear light': blend_channels_linear_light,
+                           'hard light': blend_channels_hard_light}
 
         if blendmode in blend_functions:
             for c in (0, 1, 2):
@@ -174,6 +172,27 @@ def blend_channels_multiply(bottom_chan, top_chan):
         Math from http://illusions.hu/effectwiki/doku.php?id=multiply_blending
     """
     return bottom_chan[:,:] * top_chan[:,:]
+
+def blend_channels_linear_light(bottom_chan, top_chan):
+    """ Return combination of bottom and top channels.
+    
+        Math from http://illusions.hu/effectwiki/doku.php?id=linear_light_blending
+    """
+    return numpy.clip(bottom_chan[:,:] + 2 * top_chan[:,:] - 1, 0, 1)
+
+def blend_channels_hard_light(bottom_chan, top_chan):
+    """ Return combination of bottom and top channels.
+    
+        Math from http://illusions.hu/effectwiki/doku.php?id=hard_light_blending
+    """
+    # different pixel subsets for dark and light parts of overlay
+    dk, lt = top_chan < .5, top_chan >= .5
+    
+    output_chan = numpy.empty(bottom_chan.shape, bottom_chan.dtype)
+    output_chan[dk] = 2 * bottom_chan[dk] * top_chan[dk]
+    output_chan[lt] = 1 - 2 * (1 - bottom_chan[lt]) * (1 - top_chan[lt])
+    
+    return output_chan
 
 def _arr2img(ar):
     """ Convert Numeric array to PIL Image.
@@ -447,23 +466,6 @@ if __name__ == '__main__':
         def test0(self):
             
             out = self.h_gradient
-            out = out.add(self.v_gradient)
-            
-            img = out.image()
-            
-            assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
-            assert img.getpixel((1, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top center pixel'
-            assert img.getpixel((2, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top right pixel'
-            assert img.getpixel((0, 1)) == (0x80, 0x80, 0x80, 0xFF), 'center left pixel'
-            assert img.getpixel((1, 1)) == (0x80, 0x80, 0x80, 0xFF), 'middle pixel'
-            assert img.getpixel((2, 1)) == (0x80, 0x80, 0x80, 0xFF), 'center right pixel'
-            assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
-            assert img.getpixel((1, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom center pixel'
-            assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
-        
-        def test0(self):
-            
-            out = self.h_gradient
             out = out.add(self.v_gradient, mode='screen')
             
             img = out.image()
@@ -493,6 +495,40 @@ if __name__ == '__main__':
             assert img.getpixel((2, 1)) == (0x80, 0x80, 0x80, 0xFF), 'center right pixel'
             assert img.getpixel((0, 2)) == (0x00, 0x00, 0x00, 0xFF), 'bottom left pixel'
             assert img.getpixel((1, 2)) == (0x80, 0x80, 0x80, 0xFF), 'bottom center pixel'
+            assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
+        
+        def test2(self):
+            
+            out = self.h_gradient
+            out = out.add(self.v_gradient, mode='linear light')
+            
+            img = out.image()
+            
+            assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+            assert img.getpixel((1, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top center pixel'
+            assert img.getpixel((2, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top right pixel'
+            assert img.getpixel((0, 1)) == (0x01, 0x01, 0x01, 0xFF), 'center left pixel'
+            assert img.getpixel((1, 1)) == (0x81, 0x81, 0x81, 0xFF), 'middle pixel'
+            assert img.getpixel((2, 1)) == (0xFF, 0xFF, 0xFF, 0xFF), 'center right pixel'
+            assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
+            assert img.getpixel((1, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom center pixel'
+            assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
+        
+        def test3(self):
+            
+            out = self.h_gradient
+            out = out.add(self.v_gradient, mode='hard light')
+            
+            img = out.image()
+            
+            assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+            assert img.getpixel((1, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top center pixel'
+            assert img.getpixel((2, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top right pixel'
+            assert img.getpixel((0, 1)) == (0x01, 0x01, 0x01, 0xFF), 'center left pixel'
+            assert img.getpixel((1, 1)) == (0x80, 0x80, 0x80, 0xFF), 'middle pixel'
+            assert img.getpixel((2, 1)) == (0xFF, 0xFF, 0xFF, 0xFF), 'center right pixel'
+            assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
+            assert img.getpixel((1, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom center pixel'
             assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
     
     unittest.main()
