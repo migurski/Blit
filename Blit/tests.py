@@ -344,6 +344,9 @@ class AdjustmentTests(unittest.TestCase):
         _ffff = '\xFF\xFF\xFF\xFF'
         _000f = '\x00\x00\x00\xFF'
         
+        # simple 50% gray dot
+        self.gray = Color(0x80, 0x80, 0x80)
+    
         # opaque horizontal gradient, black to white
         self.h_gradient = Bitmap(_str2img((_000f + _808f + _ffff) * 3))
     
@@ -376,6 +379,55 @@ class AdjustmentTests(unittest.TestCase):
         assert img.getpixel((0, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top left pixel'
         assert img.getpixel((1, 0)) == (0xD6, 0xD6, 0xD6, 0xFF), 'top center pixel'
         assert img.getpixel((2, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top right pixel'
+    
+    def test3(self):
+        
+        red_map = [[0x00, 0x00], [0x80, 0x40], [0xFF, 0xFF]]
+        out = self.h_gradient.adjust(adjustments.curves2(red_map))
+        
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+        assert img.getpixel((1, 0)) == (0x40, 0x40, 0x40, 0xFF), 'top center pixel'
+        assert img.getpixel((2, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top right pixel'
+    
+    def test4(self):
+        
+        red_map = [[0x00, 0xFF], [0x80, 0x80], [0xFF, 0x00]]
+        out = self.h_gradient.adjust(adjustments.curves2(red_map))
+        
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top left pixel'
+        assert img.getpixel((1, 0)) == (0x80, 0x80, 0x80, 0xFF), 'top center pixel'
+        assert img.getpixel((2, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top right pixel'
+    
+    def test4(self):
+        
+        red_map   = [[0, 22], [128, 128], [255, 255]]
+        green_map = [[0, 29], [128, 128], [255, 255]]
+        blue_map  = [[0, 65], [128, 128], [255, 228]]
+        out = self.h_gradient.adjust(adjustments.curves2(red_map, green_map, blue_map))
+        
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == ( 22,  29,  65, 0xFF), 'top left pixel'
+        assert img.getpixel((1, 0)) == (128, 128, 128, 0xFF), 'top center pixel'
+        assert img.getpixel((2, 0)) == (255, 255, 228, 0xFF), 'top right pixel'
+    
+    def test5(self):
+        
+        out = self.gray.adjust(adjustments.threshold(0x99))
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF)
+    
+    def test6(self):
+        
+        out = self.gray.adjust(adjustments.threshold(0x66))
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0xFF, 0xFF, 0xFF, 0xFF)
 
 if __name__ == '__main__':
     unittest.main()

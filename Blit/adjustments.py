@@ -67,8 +67,10 @@ def curves(black, grey, white):
     
     return adjustfunc
 
-def curves2(rgba, map_red, map_green=None, map_blue=None):
-    """ Adjustment inspired by Photoshop "Curves" feature.
+def curves2(map_red, map_green=None, map_blue=None):
+    """ Return a function that applies a curves operation.
+        
+        Adjustment inspired by Photoshop "Curves" feature.
     
         Arguments are given in the form of three value mappings, typically
         mapping black, grey and white input and output values. One argument
@@ -76,55 +78,45 @@ def curves2(rgba, map_red, map_green=None, map_blue=None):
         effects to each channel separately.
     
         Simple monochrome inversion:
-    
-          [
-            "curves2",
-            [[0, 255], [128, 128], [255, 0]]
-          ]
+            map_red=[[0, 255], [128, 128], [255, 0]]
     
         Darken a light image by pushing light grey down by 50%, 0x99 to 0x66:
+            map_red=[[0, 255], [153, 102], [255, 0]]
     
-          [
-            "curves2",
-            [[0, 255], [153, 102], [255, 0]]
-          ]
-    
-        Shaded hills, with Imhof-style purple-blue shadows and warm highlights: 
-        
-          [
-            "curves2",
-            [[0, 22], [128, 128], [255, 255]],
-            [[0, 29], [128, 128], [255, 255]],
-            [[0, 65], [128, 128], [255, 228]]
-          ]
+        Shaded hills, with Imhof-style purple-blue shadows and warm highlights:
+            map_red=[[0, 22], [128, 128], [255, 255]],
+            map_green=[[0, 29], [128, 128], [255, 255]],
+            map_blue=[[0, 65], [128, 128], [255, 228]]
     """
     if map_green is None or map_blue is None:
         # if there aren't three provided, use the one
         map_green, map_blue = map_red, map_red
 
-    # channels
-    red, green, blue, alpha = rgba
-    out = []
+    def adjustfunc(rgba):
+        red, green, blue, alpha = rgba
+        out = []
+        
+        for (chan, input) in ((red, map_red), (green, map_green), (blue, map_blue)):
+            # coefficients
+            a, b, c = [sympy.Symbol(n) for n in 'abc']
+            
+            # parameters given in 0-255 range, need to be converted to floats
+            (in_1, out_1), (in_2, out_2), (in_3, out_3) \
+                = [(in_ / 255.0, out_ / 255.0) for (in_, out_) in input]
+            
+            # quadratic function
+            eqs = [a * in_1**2 + b * in_1 + c - out_1,
+                   a * in_2**2 + b * in_2 + c - out_2,
+                   a * in_3**2 + b * in_3 + c - out_3]
+            
+            co = sympy.solve(eqs, a, b, c)
+            
+            # arrays for each coefficient
+            a, b, c = [float(co[n]) * numpy.ones(chan.shape, numpy.float32) for n in (a, b, c)]
+            
+            # arithmetic
+            out.append(numpy.clip(a * chan**2 + b * chan + c, 0, 1))
+        
+        return out + [alpha]
     
-    for (chan, input) in ((red, map_red), (green, map_green), (blue, map_blue)):
-        # coefficients
-        a, b, c = [sympy.Symbol(n) for n in 'abc']
-        
-        # parameters given in 0-255 range, need to be converted to floats
-        (in_1, out_1), (in_2, out_2), (in_3, out_3) \
-            = [(in_ / 255.0, out_ / 255.0) for (in_, out_) in input]
-        
-        # quadratic function
-        eqs = [a * in_1**2 + b * in_1 + c - out_1,
-               a * in_2**2 + b * in_2 + c - out_2,
-               a * in_3**2 + b * in_3 + c - out_3]
-        
-        co = sympy.solve(eqs, a, b, c)
-        
-        # arrays for each coefficient
-        a, b, c = [float(co[n]) * numpy.ones(chan.shape, numpy.float32) for n in (a, b, c)]
-        
-        # arithmetic
-        out.append(numpy.clip(a * chan**2 + b * chan + c, 0, 1))
-    
-    return out + [alpha]
+    return adjustfunc

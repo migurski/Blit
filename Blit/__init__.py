@@ -116,7 +116,8 @@ class Color (Layer):
     def image(self):
         """ Return a fresh 1x1 image with the correct color.
         """
-        return Image.new('RGBA', (1, 1), [int(c * 255) for c in self._components])
+        color = [int(c * 255) for c in self._components]
+        return Image.new('RGBA', (1, 1), tuple(color))
     
     def rgba(self, width, height):
         """ Generate a new list of channel arrays for the given dimensions.
@@ -127,3 +128,14 @@ class Color (Layer):
         a = numpy.ones((width, height)) * self._components[3]
         
         return r, g, b, a
+    
+    def adjust(self, adjustfunc):
+        """
+        """
+        # make a list of 1x1 arrays as though this was a bitmap
+        rgba = [numpy.ones((1, 1), dtype=float) * c for c in self._components]
+
+        # apply adjustment to arrays and turn them back into 8-bit components
+        rgba = [chan[0,0] * 255 for chan in adjustfunc(rgba)]
+        
+        return Color(*rgba)
