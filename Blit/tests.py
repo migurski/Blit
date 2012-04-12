@@ -39,8 +39,8 @@ class Tests(unittest.TestCase):
     def test0(self):
     
         out = self.base
-        out = out.add(self.outlines)
-        out = out.add(self.streets)
+        out = out.blend(self.outlines)
+        out = out.blend(self.streets)
         
         img = out.image()
 
@@ -57,8 +57,8 @@ class Tests(unittest.TestCase):
     def test1(self):
 
         out = self.base
-        out = out.add(self.outlines, self.halos)
-        out = out.add(self.streets)
+        out = out.blend(self.outlines, self.halos)
+        out = out.blend(self.streets)
         
         img = out.image()
 
@@ -75,8 +75,8 @@ class Tests(unittest.TestCase):
     def test2(self):
     
         out = Color(0xcc, 0xcc, 0xcc)
-        out = out.add(self.outlines, self.halos)
-        out = out.add(self.streets)
+        out = out.blend(self.outlines, self.halos)
+        out = out.blend(self.streets)
         
         img = out.image()
         
@@ -93,8 +93,8 @@ class Tests(unittest.TestCase):
     def test3(self):
         
         out = Color(0xcc, 0xcc, 0xcc)
-        out = out.add(Color(0x99, 0x99, 0x99), self.halos)
-        out = out.add(self.streets)
+        out = out.blend(Color(0x99, 0x99, 0x99), self.halos)
+        out = out.blend(self.streets)
         
         img = out.image()
         
@@ -111,8 +111,8 @@ class Tests(unittest.TestCase):
     def test4(self):
 
         out = Color(0x00, 0x00, 0x00, 0x00)
-        out = out.add(Color(0x99, 0x99, 0x99), self.halos)
-        out = out.add(self.streets)
+        out = out.blend(Color(0x99, 0x99, 0x99), self.halos)
+        out = out.blend(self.streets)
         
         img = out.image()
         
@@ -153,7 +153,7 @@ class AlphaTests(unittest.TestCase):
     def test0(self):
     
         out = self.gray
-        out = out.add(self.white_wipe)
+        out = out.blend(self.white_wipe)
         
         img = out.image()
         
@@ -170,7 +170,7 @@ class AlphaTests(unittest.TestCase):
     def test1(self):
         
         out = self.gray
-        out = out.add(self.black_wipe)
+        out = out.blend(self.black_wipe)
         
         img = out.image()
         
@@ -187,7 +187,7 @@ class AlphaTests(unittest.TestCase):
     def test2(self):
     
         out = self.gray
-        out = out.add(self.white_wipe, self.h_gradient)
+        out = out.blend(self.white_wipe, self.h_gradient)
         
         img = out.image()
         
@@ -204,7 +204,7 @@ class AlphaTests(unittest.TestCase):
     def test3(self):
         
         out = self.gray
-        out = out.add(self.black_wipe, self.h_gradient)
+        out = out.blend(self.black_wipe, self.h_gradient)
         
         img = out.image()
         
@@ -221,7 +221,7 @@ class AlphaTests(unittest.TestCase):
     def test4(self):
         
         out = self.nothing
-        out = out.add(self.white_wipe)
+        out = out.blend(self.white_wipe)
         
         img = out.image()
         
@@ -253,7 +253,7 @@ class BlendTests(unittest.TestCase):
     def test0(self):
         
         out = self.h_gradient
-        out = out.add(self.v_gradient, mode='screen')
+        out = out.blend(self.v_gradient, mode='screen')
         
         img = out.image()
         
@@ -270,7 +270,7 @@ class BlendTests(unittest.TestCase):
     def test1(self):
         
         out = self.h_gradient
-        out = out.add(self.v_gradient, mode='multiply')
+        out = out.blend(self.v_gradient, mode='multiply')
         
         img = out.image()
         
@@ -287,7 +287,7 @@ class BlendTests(unittest.TestCase):
     def test2(self):
         
         out = self.h_gradient
-        out = out.add(self.v_gradient, mode='linear light')
+        out = out.blend(self.v_gradient, mode='linear light')
         
         img = out.image()
         
@@ -304,7 +304,7 @@ class BlendTests(unittest.TestCase):
     def test3(self):
         
         out = self.h_gradient
-        out = out.add(self.v_gradient, mode='hard light')
+        out = out.blend(self.v_gradient, mode='hard light')
         
         img = out.image()
         
@@ -321,7 +321,7 @@ class BlendTests(unittest.TestCase):
     def test4(self):
         
         out = self.h_gradient
-        out = out.add(self.v_gradient, opacity=0.5)
+        out = out.blend(self.v_gradient, opacity=0.5)
         
         img = out.image()
         
