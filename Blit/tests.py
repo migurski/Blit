@@ -6,7 +6,7 @@ Run as a module, like this:
 import unittest
 import Image
 
-from . import Bitmap, Color, blends
+from . import Bitmap, Color, blends, adjustments
 
 def _str2img(str):
     """
@@ -334,6 +334,28 @@ class BlendTests(unittest.TestCase):
         assert img.getpixel((0, 2)) == (0x80, 0x80, 0x80, 0xFF), 'bottom left pixel'
         assert img.getpixel((1, 2)) == (0xC0, 0xC0, 0xC0, 0xFF), 'bottom center pixel'
         assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
+
+class AdjustmentTests(unittest.TestCase):
+    """
+    """
+    def setUp(self):
+    
+        _808f = '\x80\x80\x80\xFF'
+        _ffff = '\xFF\xFF\xFF\xFF'
+        _000f = '\x00\x00\x00\xFF'
+        
+        # opaque horizontal gradient, black to white
+        self.h_gradient = Bitmap(_str2img((_000f + _808f + _ffff) * 3))
+    
+    def test0(self):
+        
+        out = self.h_gradient.adjust(adjustments.threshold(0x99))
+        
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+        assert img.getpixel((1, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top center pixel'
+        assert img.getpixel((2, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top right pixel'
 
 if __name__ == '__main__':
     unittest.main()

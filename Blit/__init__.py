@@ -2,6 +2,7 @@ import numpy
 import Image
 
 from . import blends
+from . import adjustments
 from . import utils
 
 class Layer:
@@ -82,6 +83,11 @@ class Layer:
         output_rgba = blends.combine(bottom_rgba, top_rgb, alpha_chan, opacity, blendfunc)
         
         return Layer(output_rgba)
+    
+    def adjust(self, adjustfunc):
+        """
+        """
+        return Layer(adjustfunc(self._rgba))
 
 class Bitmap (Layer):
     """ Raster layer instantiated with a bitmap image.

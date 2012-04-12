@@ -15,7 +15,7 @@ def img2arr(im):
 def rgba2img(rgba):
     """ Convert four Numeric array objects to PIL Image.
     """
-    assert type(rgba) is list
+    assert type(rgba) in (tuple, list)
     return Image.merge('RGBA', [arr2img(numpy.round(band * 255.0).astype(numpy.ubyte)) for band in rgba])
 
 def img2rgba(im):
