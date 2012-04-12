@@ -50,6 +50,8 @@ class Layer:
     
     def blend(self, other, mask=None, opacity=1, mode=None):
         """ Return a new Layer, with data from another layer blended on top.
+        
+            See blends.combine() for list of working blend modes.
         """
         #
         # Choose an output size based on the first input that has one.

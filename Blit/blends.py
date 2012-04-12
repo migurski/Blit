@@ -3,8 +3,8 @@ import numpy
 def combine(bottom_rgba, top_rgb, mask_chan, opacity, blendmode):
     """ Blend arrays using a given mask, opacity, and blend mode.
     
-        Working blend modes:
-        None for plain pass-through, "screen", "multiply", "linear light", and "hard light".
+        Working blend modes include None for plain pass-through, "screen",
+        "additive", "multiply", "subtractive", "linear light", and "hard light".
     """
     if opacity == 0 or not mask_chan.any():
         # no-op for zero opacity or empty mask
@@ -19,7 +19,9 @@ def combine(bottom_rgba, top_rgb, mask_chan, opacity, blendmode):
 
     else:
         blend_functions = {'screen': screen_channels,
+                           'additive': add_channels,
                            'multiply': multiply_channels,
+                           'subtractive': subtract_channels,
                            'linear light': linear_light_channels,
                            'hard light': hard_light_channels}
 
@@ -68,12 +70,26 @@ def screen_channels(bottom_chan, top_chan):
     """
     return 1 - (1 - bottom_chan[:,:]) * (1 - top_chan[:,:])
 
+def add_channels(bottom_chan, top_chan):
+    """ Return combination of bottom and top channels.
+    
+        Math from http://illusions.hu/effectwiki/doku.php?id=additive_blending
+    """
+    return numpy.clip(bottom_chan[:,:] + top_chan[:,:], 0, 1)
+
 def multiply_channels(bottom_chan, top_chan):
     """ Return combination of bottom and top channels.
     
         Math from http://illusions.hu/effectwiki/doku.php?id=multiply_blending
     """
     return bottom_chan[:,:] * top_chan[:,:]
+
+def subtract_channels(bottom_chan, top_chan):
+    """ Return combination of bottom and top channels.
+    
+        Math from http://illusions.hu/effectwiki/doku.php?id=subtractive_blending
+    """
+    return numpy.clip(bottom_chan[:,:] - top_chan[:,:], 0, 1)
 
 def linear_light_channels(bottom_chan, top_chan):
     """ Return combination of bottom and top channels.
