@@ -1,7 +1,8 @@
 import sympy
+import numpy
 
 def threshold(red_value, green_value=None, blue_value=None):
-    """
+    """ Return a function that applies a threshold operation.
     """
     if green_value is None or blue_value is None:
         # if there aren't three provided, use the one
@@ -26,29 +27,23 @@ def threshold(red_value, green_value=None, blue_value=None):
     
     return adjustfunc
 
-def curves(rgba, black_grey_white):
-    """ Adjustment inspired by Photoshop "Curves" feature.
+def curves(black, grey, white):
+    """ Return a function that applies a curves operation.
+        
+        Adjustment inspired by Photoshop "Curves" feature.
     
         Arguments are three integers that are intended to be mapped to black,
         grey, and white outputs. Curves2 offers more flexibility, see
         curves2().
         
-        Darken a light image by pushing light grey to 50% grey, 0xCC to 0x80:
-    
-          [
-            "curves",
-            [0, 204, 255]
-          ]
+        Darken a light image by pushing light grey to 50% grey, 0xCC to 0x80
+        with black=0, grey=204, white=255.
     """
-    # channels
-    red, green, blue, alpha = rgba
-    black, grey, white = black_grey_white
+    # knowns are given in 0-255 range, need to be converted to floats
+    black, grey, white = black / 255.0, grey / 255.0, white / 255.0
     
     # coefficients
     a, b, c = [sympy.Symbol(n) for n in 'abc']
-    
-    # knowns are given in 0-255 range, need to be converted to floats
-    black, grey, white = black / 255.0, grey / 255.0, white / 255.0
     
     # black, gray, white
     eqs = [a * black**2 + b * black + c - 0.0,
@@ -57,15 +52,20 @@ def curves(rgba, black_grey_white):
     
     co = sympy.solve(eqs, a, b, c)
     
-    # arrays for each coefficient
-    a, b, c = [float(co[n]) * numpy.ones(red.shape, numpy.float32) for n in (a, b, c)]
+    def adjustfunc(rgba):
+        red, green, blue, alpha = rgba
     
-    # arithmetic
-    red   = numpy.clip(a * red**2   + b * red   + c, 0, 1)
-    green = numpy.clip(a * green**2 + b * green + c, 0, 1)
-    blue  = numpy.clip(a * blue**2  + b * blue  + c, 0, 1)
+        # arrays for each coefficient
+        do, re, mi = [float(co[n]) * numpy.ones(red.shape, numpy.float32) for n in (a, b, c)]
+        
+        # arithmetic
+        red   = numpy.clip(do * red**2   + re * red   + mi, 0, 1)
+        green = numpy.clip(do * green**2 + re * green + mi, 0, 1)
+        blue  = numpy.clip(do * blue**2  + re * blue  + mi, 0, 1)
+        
+        return red, green, blue, alpha
     
-    return red, green, blue, alpha
+    return adjustfunc
 
 def curves2(rgba, map_red, map_green=None, map_blue=None):
     """ Adjustment inspired by Photoshop "Curves" feature.

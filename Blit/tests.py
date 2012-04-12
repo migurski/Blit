@@ -356,6 +356,26 @@ class AdjustmentTests(unittest.TestCase):
         assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
         assert img.getpixel((1, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top center pixel'
         assert img.getpixel((2, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top right pixel'
+    
+    def test1(self):
+        
+        out = self.h_gradient.adjust(adjustments.threshold(0x99, 0x66, 0x66))
+        
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+        assert img.getpixel((1, 0)) == (0x00, 0xFF, 0xFF, 0xFF), 'top center pixel'
+        assert img.getpixel((2, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top right pixel'
+    
+    def test2(self):
+        
+        out = self.h_gradient.adjust(adjustments.curves(0xFF, 0xC0, 0x00))
+        
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top left pixel'
+        assert img.getpixel((1, 0)) == (0xD6, 0xD6, 0xD6, 0xFF), 'top center pixel'
+        assert img.getpixel((2, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top right pixel'
 
 if __name__ == '__main__':
     unittest.main()
