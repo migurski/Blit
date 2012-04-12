@@ -45,7 +45,7 @@ class Layer:
         """
         return _rgba2img(self._rgba)
     
-    def add(self, other, mask=None):
+    def add(self, other, mask=None, mode=None):
         """ Return a new Layer, 
         """
         #
@@ -74,7 +74,7 @@ class Layer:
             mask_lum = 0.299 * mask_r + 0.587 * mask_g + 0.114 * mask_b
             alpha_chan *= mask_lum
         
-        output_rgba = blend_images(bottom_rgba, top_rgb, alpha_chan, 1, None)
+        output_rgba = blend_images(bottom_rgba, top_rgb, alpha_chan, 1, mode)
         
         return Layer(output_rgba)
 
@@ -115,10 +115,11 @@ def blend_images(bottom_rgba, top_rgb, mask_chan, opacity, blendmode):
         output_rgba[:3] = [numpy.copy(chan) for chan in top_rgb]
 
     else:
-        blend_functions = {'screen': blend_channels_screen,
-                           'multiply': blend_channels_multiply,
-                           'linear light': blend_channels_linear_light,
-                           'hard light': blend_channels_hard_light}
+        #blend_functions = {'screen': blend_channels_screen,
+        #                   'multiply': blend_channels_multiply,
+        #                   'linear light': blend_channels_linear_light,
+        #                   'hard light': blend_channels_hard_light}
+        blend_functions = {'screen': blend_channels_screen}
 
         if blendmode in blend_functions:
             for c in (0, 1, 2):
@@ -416,6 +417,55 @@ if __name__ == '__main__':
             assert img.getpixel((0, 1)) == (0xFF, 0xFF, 0xFF, 0x80), 'center left pixel'
             assert img.getpixel((1, 1)) == (0xFF, 0xFF, 0xFF, 0x80), 'middle pixel'
             assert img.getpixel((2, 1)) == (0xFF, 0xFF, 0xFF, 0x80), 'center right pixel'
+            assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
+            assert img.getpixel((1, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom center pixel'
+            assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
+
+    class BlendTests(unittest.TestCase):
+        """
+        """
+        def setUp(self):
+        
+            _808f = '\x80\x80\x80\xFF'
+            _ffff = '\xFF\xFF\xFF\xFF'
+            _000f = '\x00\x00\x00\xFF'
+            
+            # opaque horizontal gradient, black to white
+            self.h_gradient = Layer(_str2img((_000f + _808f + _ffff) * 3))
+                
+            # opaque vertical gradient, black to white
+            self.v_gradient = Layer(_str2img(_000f * 3 + _808f * 3 + _ffff * 3))
+        
+        def test0(self):
+            
+            out = self.h_gradient
+            out = out.add(self.v_gradient)
+            
+            img = out.image()
+            
+            assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+            assert img.getpixel((1, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top center pixel'
+            assert img.getpixel((2, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top right pixel'
+            assert img.getpixel((0, 1)) == (0x80, 0x80, 0x80, 0xFF), 'center left pixel'
+            assert img.getpixel((1, 1)) == (0x80, 0x80, 0x80, 0xFF), 'middle pixel'
+            assert img.getpixel((2, 1)) == (0x80, 0x80, 0x80, 0xFF), 'center right pixel'
+            assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
+            assert img.getpixel((1, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom center pixel'
+            assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
+        
+        def test0(self):
+            
+            out = self.h_gradient
+            out = out.add(self.v_gradient, mode='screen')
+            
+            img = out.image()
+            
+            assert img.getpixel((0, 0)) == (0x00, 0x00, 0x00, 0xFF), 'top left pixel'
+            assert img.getpixel((1, 0)) == (0x80, 0x80, 0x80, 0xFF), 'top center pixel'
+            assert img.getpixel((2, 0)) == (0xFF, 0xFF, 0xFF, 0xFF), 'top right pixel'
+            assert img.getpixel((0, 1)) == (0x80, 0x80, 0x80, 0xFF), 'center left pixel'
+            assert img.getpixel((1, 1)) == (0xC0, 0xC0, 0xC0, 0xFF), 'middle pixel'
+            assert img.getpixel((2, 1)) == (0xFF, 0xFF, 0xFF, 0xFF), 'center right pixel'
             assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
             assert img.getpixel((1, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom center pixel'
             assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
