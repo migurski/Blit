@@ -56,35 +56,35 @@ def screen(bottom_chan, top_chan):
     
         Math from http://illusions.hu/effectwiki/doku.php?id=screen_blending
     """
-    return 1 - (1 - bottom_chan[:,:]) * (1 - top_chan[:,:])
+    return 1 - (1 - bottom_chan) * (1 - top_chan)
 
 def add(bottom_chan, top_chan):
     """ Additive blend function.
     
         Math from http://illusions.hu/effectwiki/doku.php?id=additive_blending
     """
-    return numpy.clip(bottom_chan[:,:] + top_chan[:,:], 0, 1)
+    return numpy.clip(bottom_chan + top_chan, 0, 1)
 
 def multiply(bottom_chan, top_chan):
     """ Multiply blend function.
     
         Math from http://illusions.hu/effectwiki/doku.php?id=multiply_blending
     """
-    return bottom_chan[:,:] * top_chan[:,:]
+    return bottom_chan * top_chan
 
 def subtract(bottom_chan, top_chan):
     """ Subtractive blend function.
     
         Math from http://illusions.hu/effectwiki/doku.php?id=subtractive_blending
     """
-    return numpy.clip(bottom_chan[:,:] - top_chan[:,:], 0, 1)
+    return numpy.clip(bottom_chan - top_chan, 0, 1)
 
 def linear_light(bottom_chan, top_chan):
     """ Linear light blend function.
     
         Math from http://illusions.hu/effectwiki/doku.php?id=linear_light_blending
     """
-    return numpy.clip(bottom_chan[:,:] + 2 * top_chan[:,:] - 1, 0, 1)
+    return numpy.clip(bottom_chan + 2 * top_chan - 1, 0, 1)
 
 def hard_light(bottom_chan, top_chan):
     """ Hard light blend function.
