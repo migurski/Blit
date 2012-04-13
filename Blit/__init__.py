@@ -1,3 +1,22 @@
+""" Simple pixel-composition library.
+
+Dependencies: numpy, sympy, PIL.
+
+Blit performs basic, Photosop-style layer compositions with blend modes
+and selected adjustments, using Numpy internally to perform all math.
+
+See Blit.adjustments for information on filters and Blit.blends for blend modes.
+
+>>> from Blit import Bitmap, adjustments
+>>> photo = Bitmap('photo.jpg')
+>>> sepia = adjustments.curves2([(0, 64), (128, 158), (255, 255)], [(0, 23), (128, 140), (255, 255)], [(0, 0), (128, 98), (255, 194)])
+>>> oldphoto = photo.adjust(sepia)
+
+>>> from Blit import Color
+>>> purple = Color(50, 0, 100)
+>>> orange = Color(255, 220, 180)
+>>> duotone = purple.blend(orange, mask=photo)
+"""
 import numpy
 import Image
 

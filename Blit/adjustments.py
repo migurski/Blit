@@ -1,3 +1,9 @@
+""" Adjustment factory functions.
+
+An adjustment is a function that takes a list of four identically-sized channel
+arrays (red, green, blue, and alpha) and returns a new list of four channels.
+The factory functions in this module return functions that perform adjustments.
+"""
 import sympy
 import numpy
 

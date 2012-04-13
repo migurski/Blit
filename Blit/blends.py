@@ -1,3 +1,8 @@
+""" Blend functions.
+
+A blend is a function that accepts two identically-sized
+input channel arrays and returns a single output array.
+"""
 import numpy
 
 def combine(bottom_rgba, top_rgb, mask_chan, opacity, blendfunc):
