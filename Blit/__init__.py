@@ -54,6 +54,8 @@ class Layer:
         
             See blends.combine() for details on blend functions.
         """
+        no_dim = False
+        
         #
         # Choose an output size based on the first input that has one.
         #
@@ -64,6 +66,7 @@ class Layer:
         elif mask and mask.size():
             dim = mask.size()
         else:
+            no_dim = True
             dim = 1, 1
         
         bottom_rgba = self.rgba(*dim)
@@ -81,6 +84,10 @@ class Layer:
             alpha_chan *= mask_lum
         
         output_rgba = blends.combine(bottom_rgba, top_rgb, alpha_chan, opacity, blendfunc)
+        
+        if no_dim:
+            rgba = [chan[0,0] * 255 for chan in output_rgba]
+            return Color(*rgba)
         
         return Layer(output_rgba)
     

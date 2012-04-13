@@ -125,6 +125,15 @@ class Tests(unittest.TestCase):
         assert img.getpixel((0, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom left pixel'
         assert img.getpixel((1, 2)) == (0x00, 0x00, 0x00, 0x00), 'bottom center pixel'
         assert img.getpixel((2, 2)) == (0x00, 0x00, 0x00, 0x00), 'bottom right pixel'
+    
+    def test5(self):
+
+        out = Color(0x00, 0x00, 0x00, 0x00)
+        out = out.blend(Color(0x99, 0x99, 0x99))
+        
+        img = out.image()
+        
+        assert img.getpixel((0, 0)) == (0x99, 0x99, 0x99, 0xFF)
 
 class AlphaTests(unittest.TestCase):
     """
