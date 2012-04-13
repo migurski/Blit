@@ -17,6 +17,8 @@ See Blit.adjustments for information on filters and Blit.blends for blend modes.
 >>> orange = Color(255, 220, 180)
 >>> duotone = purple.blend(orange, mask=photo)
 """
+__version__ = 'N.N.N'
+
 import numpy
 import Image
 
