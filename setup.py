@@ -14,4 +14,5 @@ setup(name='Blit',
       packages=['Blit'],
       scripts=[],
       data_files=[],
+      download_url='https://github.com/downloads/migurski/Blit/Blit-%(version)s.tar.gz' % locals(),
       license='BSD')

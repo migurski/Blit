@@ -7,7 +7,7 @@ all: $(TARBALL)
 	#
 
 live: $(TARBALL)
-	python setup.py upload
+	python setup.py register
 
 $(TARBALL):
 	mkdir $(PACKAGE)
