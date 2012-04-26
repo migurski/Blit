@@ -12,7 +12,7 @@ live: $(TARBALL)
 $(TARBALL):
 	mkdir $(PACKAGE)
 	ln setup.py $(PACKAGE)/
-	ln README $(PACKAGE)/
+	ln README.md $(PACKAGE)/
 	ln VERSION $(PACKAGE)/
 
 	mkdir $(PACKAGE)/Blit
