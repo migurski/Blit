@@ -12,20 +12,14 @@ def next_uint16(file):
 def next_uint32(file):
     return unpack('>I', file.read(4))[0]
 
-def next_string(file):
-    pairs = []
-    while True:
-        pairs.append(file.read(2))
-        if pairs[-1][-1] == '\x00':
-            break
-    return ''.join(pairs).rstrip('\x00')
-
-def next_pascal_string(file, buffer=4):
+def next_pascal_string(file, pad_to):
+    '''
+    '''
     length = next_uint8(file)
     string = file.read(length)
     
-    # padded to multiples of buffer
-    skip_bytes(file, (buffer - (1 + length) % buffer) % buffer)
+    # padded to multiples of pad_to
+    skip_bytes(file, (pad_to - (1 + length) % pad_to) % pad_to)
     
     return string
 
@@ -89,7 +83,7 @@ if __name__ == '__main__':
     ends = file.tell() + size
     
     # skip the resources
-    file.seek(ends)
+    #file.seek(ends)
     
     while file.tell() < ends:
         #
@@ -103,7 +97,7 @@ if __name__ == '__main__':
         print '  -- Resource ID:', resource_id
         
         # Name: Pascal string, padded to make the size even
-        resource_name = next_string(file)
+        resource_name = next_pascal_string(file, 2)
         print '  Resource name:', resource_name
         
         # Actual size of resource data that follows
@@ -116,6 +110,8 @@ if __name__ == '__main__':
     #
     # http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_75067
     #
+    
+    all_channels_info = []
     
     print '---- Layer and Mask Information Section'
     
@@ -142,6 +138,7 @@ if __name__ == '__main__':
         # Channel information. Six bytes per channel ...
         channel_info = [(next_int16(file), next_uint32(file)) for i in range(layer_channels)]
         print 'Channel info:', channel_info
+        all_channels_info += channel_info
         
         # Blend mode signature: '8BIM'
         assert file.read(4) == '8BIM'
@@ -168,7 +165,13 @@ if __name__ == '__main__':
         layer_end_byte = file.tell() + layer_extra_data_size
         
         layer_mask_data_size = next_uint32(file)
-        skip_bytes(file, layer_mask_data_size)
+        
+        if layer_mask_data_size:
+            print 'Layer mask data:', [next_uint32(file) for i in range(4)], next_uint8(file), bin(next_uint8(file))
+            skip_bytes(file, layer_mask_data_size - 4*4 - 2)
+        
+        #print 'Layer mask data:', layer_mask_data_size, 'bytes:', repr(file.read(layer_mask_data_size))
+        #skip_bytes(file, layer_mask_data_size)
         
         layer_blending_ranges_size = next_uint32(file)
         skip_bytes(file, layer_blending_ranges_size)
@@ -184,8 +187,8 @@ if __name__ == '__main__':
             layer_info_size = next_uint32(file)
             layer_info_data = file.read(layer_info_size)
             
-            if layer_info_key in ('SoCo',):
-                print '  --', layer_info_key, '-', repr(layer_info_data)
+            if True: # layer_info_key in ('SoCo',):
+                print '  --', layer_info_key, layer_info_size, 'bytes:', repr(layer_info_data)
             
 
     #
@@ -193,17 +196,18 @@ if __name__ == '__main__':
     #
     
     print '---- Image Data'
-    print 'Starts at', file.tell()
-
-    compression_methods = 'Raw image data,RLE compressed,ZIP without prediction,ZIP with prediction'.split()
-    compression_method = compression_methods[next_uint16(file)]
-    print 'Compression method:', compression_method
+    
+    for (index, (channel_id, channel_size)) in enumerate(all_channels_info):
+    
+        print index, channel_id, channel_size-2, 'bytes'
+        
+        compression_methods = 'Raw image data,RLE compressed,ZIP without prediction,ZIP with prediction'.split(',')
+        compression_method = compression_methods[next_uint16(file)]
+        print 'Compression method:', compression_method
+        
+        print repr(file.read(channel_size-2))
     
     #
-    # PackBits follows
-    # http://en.wikipedia.org/wiki/PackBits
-    # http://web.archive.org/web/20080705155158/http://developer.apple.com/technotes/tn/tn1023.html
-    #
-
-    print [next_uint16(file) for i in range(8)]
+    
+    print '---- Remaining data, starting from', file.tell()
     print repr(file.read())
