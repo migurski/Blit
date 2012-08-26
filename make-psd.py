@@ -212,36 +212,80 @@ class PSD (Layer):
         Layer.__init__(self, channels)
         
         self.head = FileHeader(3, height, width, 8, 3)
+        self.layers = [('Background', self)]
+        self.preview = self.rgba(*self.size())
+    
+    def blend(self, name, other, mask=None, opacity=1, blendfunc=None):
+        ''' Return a new Layer, with data from another layer blended on top.
+        
+            Returned Layer loses PSD-specific data, but self is modified
+            in-place with an additional layer for saving to .psd format.
+            
+            TODO: stop modifying in-place, return a new PSD instance instead.
+        '''
+        self.layers.append((name, other))
+        
+        layer = Layer.blend(self, other, mask, opacity, blendfunc)
+        
+        self.preview = layer.rgba(*self.size())
+        
+        return layer
     
     def save(self, outfile):
-        img = self.image()
         
-        rec_args = dict(
-            rectangle = (0, 0) + self.size(),
-            channel_count = 4,
-            channel_info = (0, 1, 2, -1),
-            blend_mode = 'norm',
-            opacity = 0xff,
-            clipping = 0x00,
-            mask_data = LayerMaskAdjustmentData(),
-            blending_ranges = LayerBlendingRangesData(),
-            name = '',
-            additional_infos = []
-            )
+        records = []
+        channels = []
         
-        rec = LayerRecord(**rec_args)
-        cim = ChannelImageData(img.split())
-        info = LayerInformation(1, [rec], cim)
-        lmi = LayerMaskInformation(info, GlobalLayerMask())
-        idata = ImageData(img.split()[:3])
+        for (name, layer) in self.layers:
+            
+            record = dict(
+                name = name,
+                channel_count = 4,
+                channel_info = (0, 1, 2, -1),
+                blend_mode = 'norm',
+                opacity = 0xff,
+                clipping = 0x00,
+                mask_data = LayerMaskAdjustmentData(),
+                blending_ranges = LayerBlendingRangesData(),
+                rectangle = (0, 0) + self.size(),
+                additional_infos = []
+                )
+            
+            channels += utils.rgba2img(layer.rgba(*self.size())).split()
+
+            if layer is self:
+                #
+                # Background layer has its alpha channel removed.
+                #
+                record['channel_count'] = 3
+                record['channel_info'] = (0, 1, 2)
+                channels.pop()
+            
+            elif layer.size() is None:
+                #
+                # Layers without sizes are treated as solid colors.
+                #
+                red, green, blue = [chan[0,0] * 255 for chan in layer.rgba(1, 1)[0:3]]
+                record['additional_infos'].append(SolidColorInfo(red, green, blue))
+            
+            records.append(LayerRecord(**record))
         
-        file = PhotoshopFile(self.head, ColorModeData(), ImageResourceSection(), lmi, idata)
+        info = LayerInformation(len(self.layers), records, ChannelImageData(channels))
+        layer_mask_info = LayerMaskInformation(info, GlobalLayerMask())
+        image_data = ImageData(utils.rgba2img(self.preview).split()[0:3])
+        
+        file = PhotoshopFile(self.head, ColorModeData(), ImageResourceSection(), layer_mask_info, image_data)
         
         open(outfile, 'w').write(file.tostring())
 
 if __name__ == '__main__':
 
     psd = PSD(128, 128)
+    
+    from Blit import Color, Bitmap
+    
+    psd.blend('Orange', Color(0xff, 0x99, 0x00))
+    psd.blend('Bicycle', Bitmap('/Users/migurski/Pictures/stupid bicycle.jpg'))
     
     psd.save('made.psd')
     
