@@ -12,14 +12,24 @@ def img2arr(im):
     assert im.mode == 'L'
     return numpy.reshape(numpy.fromstring(im.tostring(), numpy.ubyte), (im.size[1], im.size[0]))
 
+def chan2img(chan):
+    """ Convert single Numeric array object to one-channel PIL Image.
+    """
+    return arr2img(numpy.round(chan * 255.0).astype(numpy.ubyte))
+
+def img2chan(img):
+    """ Convert one-channel PIL Image to single Numeric array object.
+    """
+    return img2arr(img).astype(numpy.float32) / 255.0
+
 def rgba2img(rgba):
     """ Convert four Numeric array objects to PIL Image.
     """
     assert type(rgba) in (tuple, list)
-    return Image.merge('RGBA', [arr2img(numpy.round(band * 255.0).astype(numpy.ubyte)) for band in rgba])
+    return Image.merge('RGBA', [chan2img(band) for band in rgba])
 
 def img2rgba(im):
     """ Convert PIL Image to four Numeric array objects.
     """
     assert im.mode == 'RGBA'
-    return [img2arr(band).astype(numpy.float32) / 255.0 for band in im.split()]
+    return [img2chan(band) for band in im.split()]

@@ -121,3 +121,19 @@ The factory functions in this module return functions that perform adjustments.
       `map_red=[(0, 22), (128, 128), (255, 255)],
       map_green=[(0, 29), (128, 128), (255, 255)],
       map_blue=[(0, 65), (128, 128), (255, 228)]`
+
+__utils__
+
+`Blit.utils` includes several image and array utility functions:
+
+ * `arr2img()` converts Numeric array to PIL Image.
+
+ * `img2arr()` converts PIL Image to Numeric array.
+
+ * `chan2img()` converts single floating point Numeric array object to one-channel PIL Image.
+
+ * `img2chan()` converts one-channel PIL Image to single floating point Numeric array object.
+
+ * `rgba2img()` converts four floating point Numeric array objects to PIL Image.
+
+ * `img2rgba()` converts PIL Image to four floating point Numeric array objects.
