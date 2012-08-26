@@ -1,7 +1,10 @@
 ''' See: 
 '''
 from struct import pack
-
+from Blit import Layer, utils
+from numpy import zeros
+from PIL import Image
+    
 def uint8(num):
     return pack('>B', num)
 
@@ -202,9 +205,47 @@ class ImageData:
         '''
         return '\x00\x00' + ''.join([chan.tostring() for chan in self.channels])
 
+class PSD (Layer):
+
+    def __init__(self, width, height):
+        channels = [zeros((width, height), dtype=float)] * 4
+        Layer.__init__(self, channels)
+        
+        self.head = FileHeader(3, height, width, 8, 3)
+    
+    def save(self, outfile):
+        img = self.image()
+        
+        rec_args = dict(
+            rectangle = (0, 0) + self.size(),
+            channel_count = 4,
+            channel_info = (0, 1, 2, -1),
+            blend_mode = 'norm',
+            opacity = 0xff,
+            clipping = 0x00,
+            mask_data = LayerMaskAdjustmentData(),
+            blending_ranges = LayerBlendingRangesData(),
+            name = '',
+            additional_infos = []
+            )
+        
+        rec = LayerRecord(**rec_args)
+        cim = ChannelImageData(img.split())
+        info = LayerInformation(1, [rec], cim)
+        lmi = LayerMaskInformation(info, GlobalLayerMask())
+        idata = ImageData(img.split()[:3])
+        
+        file = PhotoshopFile(self.head, ColorModeData(), ImageResourceSection(), lmi, idata)
+        
+        open(outfile, 'w').write(file.tostring())
+
 if __name__ == '__main__':
 
-    from PIL import Image
+    psd = PSD(128, 128)
+    
+    psd.save('made.psd')
+    
+    exit()
     
     img = Image.new('RGBA', (8, 8), (0xff, 0x99, 0x00, 0xff))
     
