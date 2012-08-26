@@ -14,6 +14,9 @@ def uint16(num):
 def uint32(num):
     return pack('>I', num)
 
+def double(num):
+    return pack('>d', num)
+
 def pascal_string(chars, pad_to):
     base = uint8(len(chars)) + chars
     base += '\x00' * ((pad_to - len(base) % pad_to) % pad_to)
@@ -107,7 +110,8 @@ class LayerInformation:
 class LayerRecord:
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_13084
     '''
-    def __init__(self, rectangle, channel_count, channel_info, blend_mode, opacity, clipping, mask_data, blending_ranges, name):
+    def __init__(self, rectangle, channel_count, channel_info, blend_mode, opacity,
+                 clipping, mask_data, blending_ranges, name, additional_infos):
         self.rectangle = rectangle
         self.channel_count = channel_count
         self.channel_info = channel_info
@@ -117,12 +121,14 @@ class LayerRecord:
         self.mask_data = mask_data
         self.blending_ranges = blending_ranges
         self.name = name
+        self.additional_infos = additional_infos
     
     def tostring(self):
         pixel_count = (self.rectangle[2] - self.rectangle[0]) * (self.rectangle[3] - self.rectangle[1])
         mask_data = self.mask_data.tostring()
         blending_ranges = self.blending_ranges.tostring()
         name = pascal_string(self.name, 4)
+        additional_infos = ''.join([info.tostring() for info in self.additional_infos])
     
         parts = [
             ''.join(map(uint32, self.rectangle)),
@@ -134,10 +140,11 @@ class LayerRecord:
             uint8(self.clipping),
             uint8(0b00000000),
             uint8(0x00),
-            uint32(len(mask_data + blending_ranges + name)),
+            uint32(len(mask_data + blending_ranges + name + additional_infos)),
             mask_data,
             blending_ranges,
-            name
+            name,
+            additional_infos
         ]
         
         return ''.join(parts)
@@ -146,6 +153,22 @@ class GlobalLayerMask (Dummy):
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_17115
     '''
     pass
+
+class AdditionalLayerInfo:
+    ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_71546
+    '''
+    code, data = None, None
+    
+    def tostring(self):
+        return '8BIM' + self.code + uint32(len(self.data)) + self.data
+
+class SolidColorInfo (AdditionalLayerInfo):
+
+    def __init__(self, red, green, blue):
+        red, green, blue = [double(component) for component in (red, green, blue)]
+    
+        self.code = 'SoCo'
+        self.data = '\x00\x00\x00\x10\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00null\x00\x00\x00\x01\x00\x00\x00\x00Clr Objc\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00RGBC\x00\x00\x00\x03\x00\x00\x00\x00Rd  doub%(red)s\x00\x00\x00\x00Grn doub%(green)s\x00\x00\x00\x00Bl  doub%(blue)s' % locals()
 
 class LayerMaskAdjustmentData (Dummy):
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_22582
@@ -194,7 +217,8 @@ if __name__ == '__main__':
         clipping = 0x00,
         mask_data = LayerMaskAdjustmentData(),
         blending_ranges = LayerBlendingRangesData(),
-        name = 'Orange'
+        name = 'Orange',
+        additional_infos = [SolidColorInfo(0xff, 0x00, 0xff)]
         )
     
     rec = LayerRecord(**rec_args)
