@@ -21,19 +21,48 @@ def pascal_string(chars, pad_to):
     return base
 
 class Dummy:
-    pass
+    def tostring(self):
+        return uint32(0)
 
 class PhotoshopFile:
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_pgfId-1036097
     '''
     def __init__(self, file_header, color_mode_data, image_resources, layer_mask_info, image_data):
-        pass
+        self.file_header = file_header
+        self.color_mode_data = color_mode_data
+        self.image_resources = image_resources
+        self.layer_mask_info = layer_mask_info
+        self.image_data = image_data
+    
+    def tostring(self):
+        return self.file_header.tostring() + self.color_mode_data.tostring() \
+             + self.image_resources.tostring() + self.layer_mask_info.tostring() \
+             + self.image_data.tostring()
 
 class FileHeader:
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_19840
     '''
     def __init__(self, channel_count, height, width, depth, color_mode):
-        pass
+        self.channel_count = channel_count
+        self.height = height
+        self.width = width
+        self.depth = depth
+        self.color_mode = color_mode
+    
+    def tostring(self):
+        
+        parts = [
+            '8BPS',
+            uint16(1),
+            '\x00' * 6,
+            uint16(self.channel_count),
+            uint32(self.height),
+            uint32(self.width),
+            uint16(self.depth),
+            uint16(self.color_mode)
+        ]
+        
+        return ''.join(parts)
 
 class ColorModeData (Dummy):
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_71638
@@ -104,6 +133,7 @@ class LayerRecord:
             uint8(self.opacity),
             uint8(self.clipping),
             uint8(0b00000000),
+            uint8(0x00),
             uint32(len(mask_data + blending_ranges + name)),
             mask_data,
             blending_ranges,
@@ -115,20 +145,17 @@ class LayerRecord:
 class GlobalLayerMask (Dummy):
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_17115
     '''
-    def tostring(self):
-        return uint32(0)
+    pass
 
 class LayerMaskAdjustmentData (Dummy):
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_22582
     '''
-    def tostring(self):
-        return uint32(0)
+    pass
 
 class LayerBlendingRangesData (Dummy):
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_21332
     '''
-    def tostring(self):
-        return uint32(0)
+    pass
 
 class ChannelImageData:
     ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_26431
@@ -141,6 +168,17 @@ class ChannelImageData:
         '''
         return ''.join(['\x00\x00' + chan.tostring() for chan in self.channels])
 
+class ImageData:
+    ''' http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_89817
+    '''
+    def __init__(self, channels):
+        self.channels = channels
+    
+    def tostring(self):
+        ''' Compression. 0 = Raw Data, 1 = RLE compressed, 2 = ZIP without prediction, 3 = ZIP with prediction.
+        '''
+        return '\x00\x00' + ''.join([chan.tostring() for chan in self.channels])
+
 if __name__ == '__main__':
 
     from PIL import Image
@@ -151,7 +189,7 @@ if __name__ == '__main__':
         rectangle = (0, 0, 8, 8),
         channel_count = 4,
         channel_info = (0, 1, 2, -1),
-        blend_mode = 'pass',
+        blend_mode = 'norm',
         opacity = 0xff,
         clipping = 0x00,
         mask_data = LayerMaskAdjustmentData(),
@@ -162,7 +200,13 @@ if __name__ == '__main__':
     rec = LayerRecord(**rec_args)
     cim = ChannelImageData(img.split())
     info = LayerInformation(1, [rec], cim)
-    
     lmi = LayerMaskInformation(info, GlobalLayerMask())
+    idata = ImageData(img.split()[:3])
     
-    print repr(lmi.tostring())
+    head = FileHeader(3, 8, 8, 8, 3)
+    
+    file = PhotoshopFile(head, ColorModeData(), ImageResourceSection(), lmi, idata)
+    
+    print repr(file.tostring())
+    
+    open('made.psd', 'w').write(file.tostring())
