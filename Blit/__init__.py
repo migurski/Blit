@@ -95,14 +95,8 @@ class Layer:
         top_rgb = other.rgba(*dim)[0:3]
         
         if mask is not None:
-            #
-            # Use the RGB information from the supplied mask,
-            # but convert it to a single channel as in YUV:
-            # http://en.wikipedia.org/wiki/YUV#Conversion_to.2Ffrom_RGB
-            #
-            mask_r, mask_g, mask_b = mask.rgba(*dim)[0:3]
-            mask_lum = 0.299 * mask_r + 0.587 * mask_g + 0.114 * mask_b
-            alpha_chan *= mask_lum
+            # Multiply alpha channel by mask image luminance
+            alpha_chan *= utils.rgba2lum(mask.rgba(*dim))
         
         output_rgba = blends.combine(bottom_rgba, top_rgb, alpha_chan, opacity, blendfunc)
         

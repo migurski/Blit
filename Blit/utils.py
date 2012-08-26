@@ -33,3 +33,16 @@ def img2rgba(im):
     """
     assert im.mode == 'RGBA'
     return [img2chan(band) for band in im.split()]
+
+def rgba2lum(rgba):
+    """ Convert four Numeric array objects to single luminance array.
+
+        Use the RGB information from the supplied channels,
+        but convert it to a single channel as in YUV:
+        http://en.wikipedia.org/wiki/YUV#Conversion_to.2Ffrom_RGB
+        
+        Discard alpha channel.
+    """
+    red, green, blue = rgba[0:3]
+    luminance = 0.299 * red + 0.587 * green + 0.114 * blue
+    return luminance

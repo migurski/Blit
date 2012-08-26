@@ -137,3 +137,5 @@ __utils__
  * `rgba2img()` converts four floating point Numeric array objects to PIL Image.
 
  * `img2rgba()` converts PIL Image to four floating point Numeric array objects.
+
+ * `rgba2lum()` converts four Numeric array objects to single floating point luminance array.
