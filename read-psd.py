@@ -1,3 +1,4 @@
+from sys import argv
 from struct import unpack
 
 def next_uint8(file):
@@ -29,7 +30,7 @@ def skip_bytes(file, count):
 
 if __name__ == '__main__':
 
-    file = open('orange.psd')
+    file = open(len(argv[1:]) and argv[1] or 'orange.psd')
     
     #
     # http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/PhotoshopFileFormats.htm#50577409_19840
