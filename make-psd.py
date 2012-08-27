@@ -207,43 +207,45 @@ class ImageData:
 
 class PSD (Layer):
 
+    base = None
+
     def __init__(self, width, height):
         channels = [zeros((width, height), dtype=float)] * 4
         Layer.__init__(self, channels)
         
         self.head = FileHeader(3, height, width, 8, 3)
-        self.layers = [('Background', self)]
-        self.preview = self.rgba(*self.size())
+        self.info = 'Background', self, None, 0xff, 'norm'
     
     def blend(self, name, other, mask=None, opacity=1, blendfunc=None):
-        ''' Return a new Layer, with data from another layer blended on top.
-        
-            Returned Layer loses PSD-specific data, but self is modified
-            in-place with an additional layer for saving to .psd format.
-            
-            TODO: stop modifying in-place, return a new PSD instance instead.
+        ''' Return a new PSD instance, with data from another layer included.
         '''
-        self.layers.append((name, other))
-        
-        layer = Layer.blend(self, other, mask, opacity, blendfunc)
-        
-        self.preview = layer.rgba(*self.size())
-        
-        return layer
+        return PSDMore(self, name, other, mask, opacity, blendfunc)
     
     def save(self, outfile):
         
+        info = []
         records = []
         channels = []
         
-        for (name, layer) in self.layers:
+        psd = self
+        
+        while True:
+            info.insert(0, psd.info)
+            
+            if psd.head:
+                head = psd.head
+                break
+
+            psd = psd.base
+        
+        for (index, (name, layer, mask, opacity, mode)) in enumerate(info):
             
             record = dict(
                 name = name,
                 channel_count = 4,
                 channel_info = (0, 1, 2, -1),
-                blend_mode = 'norm',
-                opacity = 0xff,
+                blend_mode = mode,
+                opacity = opacity,
                 clipping = 0x00,
                 mask_data = LayerMaskAdjustmentData(),
                 blending_ranges = LayerBlendingRangesData(),
@@ -253,7 +255,7 @@ class PSD (Layer):
             
             channels += utils.rgba2img(layer.rgba(*self.size())).split()
 
-            if layer is self:
+            if index == 0:
                 #
                 # Background layer has its alpha channel removed.
                 #
@@ -268,15 +270,35 @@ class PSD (Layer):
                 red, green, blue = [chan[0,0] * 255 for chan in layer.rgba(1, 1)[0:3]]
                 record['additional_infos'].append(SolidColorInfo(red, green, blue))
             
+            if mask:
+                #
+                # Add a layer mask channel.
+                #
+                record['channel_count'] = 5
+                record['channel_info'] = (0, 1, 2, -1, -2)
+                luminance = utils.rgba2lum(mask.rgba(*self.size()))
+                channels.append(utils.chan2img(luminance))
+            
             records.append(LayerRecord(**record))
         
-        info = LayerInformation(len(self.layers), records, ChannelImageData(channels))
+        info = LayerInformation(len(info), records, ChannelImageData(channels))
         layer_mask_info = LayerMaskInformation(info, GlobalLayerMask())
-        image_data = ImageData(utils.rgba2img(self.preview).split()[0:3])
+        image_data = ImageData(self.image().split()[0:3])
         
-        file = PhotoshopFile(self.head, ColorModeData(), ImageResourceSection(), layer_mask_info, image_data)
+        file = PhotoshopFile(head, ColorModeData(), ImageResourceSection(), layer_mask_info, image_data)
         
         open(outfile, 'w').write(file.tostring())
+
+class PSDMore (PSD):
+
+    head = None
+
+    def __init__(self, base, name, other, mask=None, opacity=1, blendfunc=None):
+        more = Layer.blend(base, other, mask, opacity, blendfunc)
+        Layer.__init__(self, more.rgba(*more.size()))
+        
+        self.base = base
+        self.info = name, other, mask, int(opacity * 0xff), 'norm'
 
 if __name__ == '__main__':
 
@@ -284,8 +306,8 @@ if __name__ == '__main__':
     
     from Blit import Color, Bitmap
     
-    psd.blend('Orange', Color(0xff, 0x99, 0x00))
-    psd.blend('Bicycle', Bitmap('/Users/migurski/Pictures/stupid bicycle.jpg'))
+    psd = psd.blend('Orange', Color(0xff, 0x99, 0x00), Bitmap('/Users/migurski/Pictures/stupid bicycle.jpg'))
+    psd = psd.blend('Bicycle', Bitmap('/Users/migurski/Pictures/stupid bicycle.jpg'))
     
     psd.save('made.psd')
     
