@@ -1,7 +1,7 @@
 ''' See: 
 '''
 from struct import pack
-from Blit import Layer, utils
+from Blit import Layer, utils, blends
 from numpy import zeros
 from PIL import Image
     
@@ -222,21 +222,28 @@ class PSD (Layer):
         return PSDMore(self, name, other, mask, opacity, blendfunc)
     
     def save(self, outfile):
-        
+        ''' Save photoshop-compatible file.
+        '''
+        #
+        # Follow the chain of PSD instances to build up a list of layers.
+        #
         info = []
-        records = []
-        channels = []
-        
         psd = self
         
         while True:
             info.insert(0, psd.info)
             
             if psd.head:
-                head = psd.head
+                file_header = psd.head
                 break
 
             psd = psd.base
+        
+        #
+        # Iterate over layers, make new LayerRecord objects and add channels.
+        #
+        records = []
+        channels = []
         
         for (index, (name, layer, mask, opacity, mode)) in enumerate(info):
             
@@ -281,13 +288,21 @@ class PSD (Layer):
             
             records.append(LayerRecord(**record))
         
-        info = LayerInformation(len(info), records, ChannelImageData(channels))
+        info = LayerInformation(len(records), records, ChannelImageData(channels))
         layer_mask_info = LayerMaskInformation(info, GlobalLayerMask())
         image_data = ImageData(self.image().split()[0:3])
         
-        file = PhotoshopFile(head, ColorModeData(), ImageResourceSection(), layer_mask_info, image_data)
+        file = PhotoshopFile(file_header, ColorModeData(), ImageResourceSection(), layer_mask_info, image_data)
         
         open(outfile, 'w').write(file.tostring())
+
+_modes = {
+    blends.screen: 'scrn',
+    blends.add: 'lddg',
+    blends.multiply: 'mul ',
+    blends.linear_light: 'lLit',
+    blends.hard_light: 'hLit'
+    }
 
 class PSDMore (PSD):
 
@@ -298,7 +313,7 @@ class PSDMore (PSD):
         Layer.__init__(self, more.rgba(*more.size()))
         
         self.base = base
-        self.info = name, other, mask, int(opacity * 0xff), 'norm'
+        self.info = name, other, mask, int(opacity * 0xff), _modes.get(blendfunc, 'norm')
 
 if __name__ == '__main__':
 
@@ -307,7 +322,7 @@ if __name__ == '__main__':
     from Blit import Color, Bitmap
     
     psd = psd.blend('Orange', Color(0xff, 0x99, 0x00), Bitmap('/Users/migurski/Pictures/stupid bicycle.jpg'))
-    psd = psd.blend('Bicycle', Bitmap('/Users/migurski/Pictures/stupid bicycle.jpg'))
+    psd = psd.blend('Bicycle', Bitmap('/Users/migurski/Pictures/stupid bicycle.jpg'), blendfunc=blends.linear_light)
     
     psd.save('made.psd')
     
