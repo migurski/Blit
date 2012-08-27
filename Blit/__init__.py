@@ -2,10 +2,11 @@
 
 Dependencies: numpy, sympy, PIL.
 
-Blit performs basic, Photosop-style layer compositions with blend modes
+Blit performs basic, Photoshop-style layer compositions with blend modes
 and selected adjustments, using Numpy internally to perform all math.
 
-See Blit.adjustments for information on filters and Blit.blends for blend modes.
+See Blit.adjustments for information on filters, Blit.blends for blend modes,
+and Blit.photoshop for PSD file output support.
 
 >>> from Blit import Bitmap, adjustments
 >>> photo = Bitmap('photo.jpg')

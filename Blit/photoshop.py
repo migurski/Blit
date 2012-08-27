@@ -274,7 +274,7 @@ class PSD (Layer):
         raise NotImplementedError("Sorry, no adjustments on PSD")
 
     def save(self, outfile):
-        ''' Save photoshop-compatible file to a named file or file-like object.
+        ''' Save Photoshop-compatible file to a named file or file-like object.
         '''
         #
         # Follow the chain of PSD instances to build up a list of layers.

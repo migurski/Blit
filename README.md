@@ -60,6 +60,14 @@ the numeric values of its channels, from zero to 255:
 * `Color.size()` returns None so it's clear that a color has no intrinsic size.
 * `Color.image()` returns a 1x1 pixel PIL image.
 
+__photoshop.PSD__
+
+Represents a Photoshop document that can be combined with other layers.
+Behaves identically to `Layer` with addition of a `save()` method and exception
+of `adjust()`.
+
+* `photoshop.PSD.save(outfile)` saves Photoshop-compatible file to a named file or file-like object.
+
 __blends__
 
 A blend is a function that accepts two identically-sized
