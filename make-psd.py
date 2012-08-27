@@ -221,6 +221,11 @@ class PSD (Layer):
         '''
         return PSDMore(self, name, other, mask, opacity, blendfunc)
     
+    def adjust(self, adjustfunc):
+        '''
+        '''
+        raise NotImplementedError("Sorry, no adjustments on PSD")
+
     def save(self, outfile):
         ''' Save photoshop-compatible file.
         '''
