@@ -38,7 +38,7 @@ class Layer:
     def size(self):
         """ Return width and height of the raster layer in pixels.
         """
-        return self._rgba[0].shape
+        return self._rgba[0].shape[1], self._rgba[0].shape[0]
     
     def rgba(self, width, height):
         """ Return a list of numpy arrays, one for each channel.

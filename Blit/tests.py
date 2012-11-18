@@ -6,7 +6,7 @@ Run as a module, like this:
 import unittest
 import Image
 
-from . import Bitmap, Color, blends, adjustments
+from . import Bitmap, Color, Layer, blends, adjustments, utils
 
 def _str2img(str):
     """
@@ -134,6 +134,18 @@ class Tests(unittest.TestCase):
         img = out.image()
         
         assert img.getpixel((0, 0)) == (0x99, 0x99, 0x99, 0xFF)
+
+    def test6(self):
+    
+        image = Image.new('RGBA', (10, 20), (0xff, 0x00, 0xff, 0xff))
+        layer = Layer(utils.img2rgba(image))
+        assert layer.size() == image.size
+        
+        image = utils.rgba2img(layer.rgba(10, 20))
+        assert image.size == layer.size()
+
+        assert image.getpixel((0, 0)) == (0xff, 0x00, 0xff, 0xff)
+        assert image.getpixel((9, 19)) == (0xff, 0x00, 0xff, 0xff)
 
 class AlphaTests(unittest.TestCase):
     """
