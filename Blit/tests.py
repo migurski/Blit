@@ -359,7 +359,7 @@ class BlendTests(unittest.TestCase):
     def test5(self):
         psd = photoshop.PSD(3, 6).blend('dark', Color(0, 0, 0), opacity=0.5)
         
-        print psd.size()
+        assert psd.size() == (3, 6)
 
 class AdjustmentTests(unittest.TestCase):
     """

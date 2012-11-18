@@ -1,6 +1,10 @@
 Blit Changelog
 ==============
 
+Version 1.3.3, November 17, 2012
+
+ * Further chased width/height confusion into photoshop.PSD header class.
+
 Version 1.3.2, November 17, 2012
 
  * Further tested and fixed bug with width/height confusion for non-square images.

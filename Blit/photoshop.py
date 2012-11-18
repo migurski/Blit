@@ -298,7 +298,7 @@ class PSD (Layer):
         channels = []
         
         for (index, (name, layer, mask, opacity, mode)) in enumerate(info):
-            
+        
             record = dict(
                 name = name,
                 channel_count = 4,
@@ -308,7 +308,7 @@ class PSD (Layer):
                 clipping = 0x00,
                 mask_data = LayerMaskAdjustmentData(),
                 blending_ranges = LayerBlendingRangesData(),
-                rectangle = (0, 0) + self.size(),
+                rectangle = (0, 0) + (self.size()[1], self.size()[0]),
                 additional_infos = []
                 )
             
