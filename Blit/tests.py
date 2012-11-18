@@ -6,7 +6,7 @@ Run as a module, like this:
 import unittest
 import Image
 
-from . import Bitmap, Color, Layer, blends, adjustments, utils
+from . import Bitmap, Color, Layer, blends, adjustments, utils, photoshop
 
 def _str2img(str):
     """
@@ -355,6 +355,11 @@ class BlendTests(unittest.TestCase):
         assert img.getpixel((0, 2)) == (0x80, 0x80, 0x80, 0xFF), 'bottom left pixel'
         assert img.getpixel((1, 2)) == (0xC0, 0xC0, 0xC0, 0xFF), 'bottom center pixel'
         assert img.getpixel((2, 2)) == (0xFF, 0xFF, 0xFF, 0xFF), 'bottom right pixel'
+    
+    def test5(self):
+        psd = photoshop.PSD(3, 6).blend('dark', Color(0, 0, 0), opacity=0.5)
+        
+        print psd.size()
 
 class AdjustmentTests(unittest.TestCase):
     """

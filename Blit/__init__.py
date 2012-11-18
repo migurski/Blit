@@ -54,15 +54,15 @@ class Layer:
         #
         # In theory, this should bring back a right-sized image.
         #
-        r, g, b, a = [numpy.zeros((width, height), dtype=float) for i in '1234']
+        r, g, b, a = [numpy.zeros((height, width), dtype=float) for i in '1234']
 
         w = min(w, width)
         h = min(h, height)
         
-        r[:w,:h] = self._rgba[0][:w,:h]
-        g[:w,:h] = self._rgba[1][:w,:h]
-        b[:w,:h] = self._rgba[2][:w,:h]
-        a[:w,:h] = self._rgba[3][:w,:h]
+        r[:w,:h] = self._rgba[0][:h,:w]
+        g[:w,:h] = self._rgba[1][:h,:w]
+        b[:w,:h] = self._rgba[2][:h,:w]
+        a[:w,:h] = self._rgba[3][:h,:w]
         
         return r, g, b, a
     
@@ -145,10 +145,10 @@ class Color (Layer):
     def rgba(self, width, height):
         """ Generate a new list of channel arrays for the given dimensions.
         """
-        r = numpy.ones((width, height)) * self._components[0]
-        g = numpy.ones((width, height)) * self._components[1]
-        b = numpy.ones((width, height)) * self._components[2]
-        a = numpy.ones((width, height)) * self._components[3]
+        r = numpy.ones((height, width)) * self._components[0]
+        g = numpy.ones((height, width)) * self._components[1]
+        b = numpy.ones((height, width)) * self._components[2]
+        a = numpy.ones((height, width)) * self._components[3]
         
         return r, g, b, a
     

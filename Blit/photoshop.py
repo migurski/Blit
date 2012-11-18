@@ -257,7 +257,7 @@ class PSD (Layer):
     def __init__(self, width, height):
         ''' Create a new, plain-black PSD instance with specified width and height.
         '''
-        channels = [numpy.zeros((width, height), dtype=float)] * 4
+        channels = [numpy.zeros((height, width), dtype=float)] * 4
         Layer.__init__(self, channels)
         
         self.head = FileHeader(3, height, width, 8, 3)

@@ -1,9 +1,13 @@
 Blit Changelog
 ==============
 
-Version 1.3.0, August 27, 2012
+Version 1.3.2, November 17, 2012
 
- * Added PSD file writing support in `photoshop.PSD` class.
+ * Further tested and fixed bug with width/height confusion for non-square images.
+
+Version 1.3.1, November 17, 2012
+
+ * Fixed bug with width/height confusion for non-square images.
 
 Version 1.2.0, August 26, 2012
 
