@@ -1,6 +1,10 @@
 Blit Changelog
 ==============
 
+Version 1.4.0, November 22, 2012
+
+ * Added clipped flag to `photoshop.PSD.blend()` method for clipping masks.
+
 Version 1.3.3, November 17, 2012
 
  * Further chased width/height confusion into photoshop.PSD header class.

@@ -261,12 +261,12 @@ class PSD (Layer):
         Layer.__init__(self, channels)
         
         self.head = FileHeader(3, height, width, 8, 3)
-        self.info = 'Background', self, None, 0xff, 'norm'
+        self.info = 'Background', self, None, 0xff, 'norm', False
     
-    def blend(self, name, other, mask=None, opacity=1, blendfunc=None):
+    def blend(self, name, other, mask=None, opacity=1, blendfunc=None, clipped=False):
         ''' Return a new PSD instance, with data from another layer included.
         '''
-        return _PSDMore(self, name, other, mask, opacity, blendfunc)
+        return _PSDMore(self, name, other, mask, opacity, blendfunc, clipped)
     
     def adjust(self, adjustfunc):
         ''' Adjustment layers are currently not implemented in PSD.
@@ -297,7 +297,7 @@ class PSD (Layer):
         records = []
         channels = []
         
-        for (index, (name, layer, mask, opacity, mode)) in enumerate(info):
+        for (index, (name, layer, mask, opacity, mode, clipped)) in enumerate(info):
         
             record = dict(
                 name = name,
@@ -305,7 +305,7 @@ class PSD (Layer):
                 channel_info = (0, 1, 2, -1),
                 blend_mode = mode,
                 opacity = opacity,
-                clipping = 0x00,
+                clipping = int(bool(clipped)),
                 mask_data = LayerMaskAdjustmentData(),
                 blending_ranges = LayerBlendingRangesData(),
                 rectangle = (0, 0) + (self.size()[1], self.size()[0]),
@@ -367,16 +367,18 @@ class _PSDMore (PSD):
     '''
     head = None
 
-    def __init__(self, base, name, other, mask=None, opacity=1, blendfunc=None):
+    def __init__(self, base, name, other, mask=None, opacity=1, blendfunc=None, clipped=False):
         ''' Create a new PSD instance with the given additional Layer blended.
         
             Arguments
               base: existing PSD instance.
               name: string with name of new layer for Photoshop output.
               other, mask, etc.: identical arguments as Layer.blend().
+              clipped: boolean to clip this layer or no.
         '''
         more = Layer.blend(base, other, mask, opacity, blendfunc)
         Layer.__init__(self, more.rgba(*more.size()))
         
         self.base = base
-        self.info = name, other, mask, int(opacity * 0xff), _modes.get(blendfunc, 'norm')
+        self.info = name, other, mask, int(opacity * 0xff), \
+                    _modes.get(blendfunc, 'norm'), bool(clipped)

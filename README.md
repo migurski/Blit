@@ -63,10 +63,11 @@ the numeric values of its channels, from zero to 255:
 __photoshop.PSD__
 
 Represents a Photoshop document that can be combined with other layers.
-Behaves identically to `Layer` with addition of a `save()` method and exception
-of `adjust()`.
+Behaves identically to `Layer` with three exceptions:
 
 * `photoshop.PSD.save(outfile)` saves Photoshop-compatible file to a named file or file-like object.
+* Additional boolean `clipped` keyword argument to `blend()` method creates clipping masks.
+* No `adjust()` method.
 
 __blends__
 
