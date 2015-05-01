@@ -1,5 +1,5 @@
 import numpy
-import Image
+from PIL import Image
 
 def arr2img(ar):
     """ Convert Numeric array to PIL Image.

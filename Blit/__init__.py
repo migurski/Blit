@@ -21,7 +21,7 @@ and Blit.photoshop for PSD file output support.
 __version__ = 'N.N.N'
 
 import numpy
-import Image
+from PIL import Image
 
 from . import blends
 from . import adjustments
