@@ -4,14 +4,14 @@ Run as a module, like this:
     python -m Blit.tests
 """
 import unittest
-import Image
+from PIL import Image
 
 from . import Bitmap, Color, Layer, blends, adjustments, utils, photoshop
 
 def _str2img(str):
     """
     """
-    return Image.fromstring('RGBA', (3, 3), str)
+    return Image.frombytes('RGBA', (3, 3), str)
 
 class Tests(unittest.TestCase):
 
