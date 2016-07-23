@@ -1,16 +1,16 @@
 import numpy
-import Image
+from PIL import Image
 
 def arr2img(ar):
     """ Convert Numeric array to PIL Image.
     """
-    return Image.fromstring('L', (ar.shape[1], ar.shape[0]), ar.astype(numpy.ubyte).tostring())
+    return Image.frombytes('L', (ar.shape[1], ar.shape[0]), ar.astype(numpy.ubyte).tobytes())
 
 def img2arr(im):
     """ Convert PIL Image to Numeric array.
     """
     assert im.mode == 'L'
-    return numpy.reshape(numpy.fromstring(im.tostring(), numpy.ubyte), (im.size[1], im.size[0]))
+    return numpy.reshape(numpy.fromstring(im.tobytes(), numpy.ubyte), (im.size[1], im.size[0]))
 
 def chan2img(chan):
     """ Convert single Numeric array object to one-channel PIL Image.
