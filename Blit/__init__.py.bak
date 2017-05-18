@@ -118,7 +118,7 @@ class Bitmap (Layer):
     def __init__(self, input):
         """ Input is a PIL Image or file name.
         """
-        if type(input) in (str, str):
+        if type(input) in (str, unicode):
             input = Image.open(input)
         
         self._rgba = utils.img2rgba(input.convert('RGBA'))
