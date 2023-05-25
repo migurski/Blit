@@ -1,3 +1,13 @@
+This version works under Ubuntu 22.04, using python3-is-python
+
+```
+python setup.py sdist bdist_wheel
+cd build
+pip install Blit-1.4.1-py3-none-any.whl
+
+
+```
+====
 Blit
 ====
 

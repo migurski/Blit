@@ -21,7 +21,7 @@ and Blit.photoshop for PSD file output support.
 __version__ = 'N.N.N'
 
 import numpy
-import Image
+from PIL import Image
 
 from . import blends
 from . import adjustments
@@ -118,7 +118,7 @@ class Bitmap (Layer):
     def __init__(self, input):
         """ Input is a PIL Image or file name.
         """
-        if type(input) in (str, unicode):
+        if type(input) in (str, str):
             input = Image.open(input)
         
         self._rgba = utils.img2rgba(input.convert('RGBA'))
